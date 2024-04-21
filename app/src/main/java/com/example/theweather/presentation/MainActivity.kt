@@ -17,6 +17,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.Surface
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
@@ -37,7 +38,9 @@ import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.ViewModelProvider
 import com.example.theweather.constants.Const.Companion.permissions
+import com.example.theweather.data.models.ForecastResult
 import com.example.theweather.data.models.LatLng
+import com.example.theweather.data.models.WeatherResult
 import com.example.theweather.presentation.ui.theme.WeatherAppTheme
 import com.example.theweather.presentation.ui.theme.colorBg1
 import com.example.theweather.presentation.ui.theme.colorBg2
@@ -107,6 +110,8 @@ class MainActivity : ComponentActivity() {
                             location.longitude
                         )
                     }
+
+                    featchWeatherInformation(mainViewModel, currentLocation)
                 }
             }
 
@@ -121,6 +126,13 @@ class MainActivity : ComponentActivity() {
                 }
             }
         }
+    }
+
+    private fun featchWeatherInformation(mainViewModel: MainViewModel, currentLocation: LatLng) {
+        mainViewModel.state = STATE.LOADING
+        mainViewModel.getWeatherByLocation(currentLocation)
+//        mainViewModel.getForecastByLocation(currentLocation)
+        mainViewModel.state = STATE.SUCCESS
     }
 
     private fun initViewModel() {
@@ -192,9 +204,63 @@ class MainActivity : ComponentActivity() {
                 verticalArrangement = Arrangement.Center,
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                Text(text = "EXCELLENT")
+
+                if (mainViewModel.state == STATE.LOADING) {
+                    LoadingSection()
+                } else if (mainViewModel.state == STATE.FAILED) {
+                    ErrorSection(mainViewModel.errorMessage)
+                } else {
+                    WeatherSection(mainViewModel.weatherResponse)
+                    ForecastSection(mainViewModel.forecastResponse)
+                }
             }
 
+        }
+    }
+
+    @Composable
+    fun ForecastSection(forecastResponse: ForecastResult) {
+        return Column(
+            modifier = Modifier.fillMaxSize(),
+            verticalArrangement = Arrangement.Center,
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Text(text = forecastResponse.toString())
+        }
+    }
+
+    @Composable
+    fun WeatherSection(weatherResponse: WeatherResult) {
+        return Column(
+            modifier = Modifier.fillMaxSize(),
+            verticalArrangement = Arrangement.Center,
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Text(text = weatherResponse.toString())
+        }
+    }
+
+
+    @Composable
+    fun LoadingSection() {
+        return Column(
+            modifier = Modifier.fillMaxSize(),
+            verticalArrangement = Arrangement.Center,
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            CircularProgressIndicator(color = Color.White)
+
+        }
+    }
+
+    @Composable
+    fun ErrorSection(errorMessage: String) {
+        return Column(
+            modifier = Modifier.fillMaxSize(),
+            verticalArrangement = Arrangement.Center,
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Text(text = errorMessage, color = Color.White)
         }
     }
 
@@ -202,4 +268,9 @@ class MainActivity : ComponentActivity() {
         fusedLocationProviderClient = LocationServices
             .getFusedLocationProviderClient(this)
     }
+
+//    @Preview
+//    fun previewHome() {
+//        LocationScreen(this@MainActivity, currentLocation)
+//    }
 }
