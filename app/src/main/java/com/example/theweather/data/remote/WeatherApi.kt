@@ -1,6 +1,6 @@
 package com.example.theweather.data.remote
 
-import com.example.theweather.constants.Constants.Companion.apiKey
+import com.example.theweather.constants.Const.Companion.apiKey
 import com.example.theweather.data.models.ForecastResult
 import com.example.theweather.data.models.WeatherResult
 import retrofit2.http.GET
