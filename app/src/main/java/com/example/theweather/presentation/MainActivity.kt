@@ -1,9 +1,7 @@
 package com.example.theweather.presentation
 
 import ErrorSection
-import ForecastSection
 import LoadingSection
-import WeatherSection
 import android.annotation.SuppressLint
 import android.content.Context
 import android.content.pm.PackageManager
@@ -21,9 +19,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.Surface
-import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -43,9 +39,13 @@ import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.ViewModelProvider
 import com.example.theweather.constants.Const.Companion.permissions
-import com.example.theweather.data.models.ForecastResult
+import com.example.theweather.constants.StaticCoordinates.Companion.BUENOS_AIRES
+import com.example.theweather.constants.StaticCoordinates.Companion.LONDRES
+import com.example.theweather.constants.StaticCoordinates.Companion.MONTEVIDEO
+import com.example.theweather.constants.StaticCoordinates.Companion.MUNICH
+import com.example.theweather.constants.StaticCoordinates.Companion.SAO_PAULO
 import com.example.theweather.data.models.LatLng
-import com.example.theweather.data.models.WeatherResult
+import com.example.theweather.presentation.Components.WeatherSection
 import com.example.theweather.presentation.ui.theme.WeatherAppTheme
 import com.example.theweather.presentation.ui.theme.colorBg1
 import com.example.theweather.presentation.ui.theme.colorBg2
@@ -63,6 +63,15 @@ class MainActivity : ComponentActivity() {
     private lateinit var locationCallback: LocationCallback
     private var locationRequired: Boolean = false
     private lateinit var mainViewModel: MainViewModel
+
+    val locations = listOf(
+        LatLng(0.0, 0.0),
+        MONTEVIDEO,
+        LONDRES,
+        SAO_PAULO,
+        BUENOS_AIRES,
+        MUNICH
+    )
 
     override fun onPause() {
         super.onPause()
@@ -115,8 +124,6 @@ class MainActivity : ComponentActivity() {
                             location.longitude
                         )
                     }
-
-                    featchWeatherInformation(mainViewModel, currentLocation)
                 }
             }
 
@@ -134,7 +141,6 @@ class MainActivity : ComponentActivity() {
     private fun featchWeatherInformation(mainViewModel: MainViewModel, currentLocation: LatLng) {
         mainViewModel.state = STATE.LOADING
         mainViewModel.getWeatherByLocation(currentLocation)
-//        mainViewModel.getForecastByLocation(currentLocation)
         mainViewModel.state = STATE.SUCCESS
     }
 
@@ -217,7 +223,6 @@ class MainActivity : ComponentActivity() {
                     }
                     else -> {
                         WeatherSection(mainViewModel.weatherResponse)
-                        ForecastSection(mainViewModel.forecastResponse)
                     }
                 }
             }

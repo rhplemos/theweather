@@ -44,18 +44,11 @@ fun WeatherSection(
                     .padding(16.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-//                Text(
-//                    text = "Today ${
-//                        data.dt?.let { timestampToHumanDate(it.toLong(), "dd-MM-yyyy") }
-//                    }",
-//                    modifier = Modifier.align(Alignment.End),
-//                    color = Color.White
-//                )
                 WeatherTitleSection(text = title, subText = subTitle, fontSize = 30.sp)
                 Spacer(modifier = Modifier.height(16.dp))
                 Spacer(modifier = Modifier.height(16.dp))
                 Text(
-                    text = "${temp}°C",
+                    text = "${temp}",
                     fontSize = 50.sp,
                     color = Color.White
                 )

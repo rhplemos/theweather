@@ -162,7 +162,7 @@ private fun setTemperature(weatherResponse: WeatherResult): String {
     var temp = ""
 
     weatherResponse.main.let {
-        temp = "${it!!.temp} ºC"
+        temp = "${it!!.temp}"
     }
 
     return temp
