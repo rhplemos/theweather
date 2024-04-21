@@ -8,6 +8,8 @@ import android.os.Looper
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.background
+import androidx.compose.foundation.gestures.FlingBehavior
+import androidx.compose.foundation.gestures.ScrollScope
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -43,6 +45,9 @@ import com.example.theweather.presentation.Components.WeatherSection
 import com.example.theweather.presentation.ui.theme.WeatherAppTheme
 import com.example.theweather.presentation.ui.theme.colorBg1
 import com.example.theweather.presentation.ui.theme.colorBg2
+import com.google.accompanist.pager.ExperimentalPagerApi
+import com.google.accompanist.pager.HorizontalPager
+import com.google.accompanist.pager.rememberPagerState
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationCallback
 import com.google.android.gms.location.LocationRequest
@@ -56,6 +61,9 @@ class MainActivity : ComponentActivity() {
     private lateinit var locationCallback: LocationCallback
     private var locationRequired: Boolean = false
     private lateinit var mainViewModel: MainViewModel
+    val locations = listOf(
+        LatLng(0.0, 0.0), MONTEVIDEO, LONDRES, SAO_PAULO, BUENOS_AIRES, MUNICH
+    )
 
     override fun onPause() {
         super.onPause()
@@ -86,6 +94,7 @@ class MainActivity : ComponentActivity() {
         }
     }
 
+    @OptIn(ExperimentalPagerApi::class)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -96,6 +105,15 @@ class MainActivity : ComponentActivity() {
             var currentLocation by remember {
                 mutableStateOf(LatLng(0.0, 0.0))
             }
+            val pagerState = rememberPagerState(initialPage = 0)
+            val flingBehavior = remember {
+                object : FlingBehavior {
+                    override suspend fun ScrollScope.performFling(initialVelocity: Float): Float {
+                        return initialVelocity
+                    }
+                }
+            }
+
 
             locationCallback = object : LocationCallback() {
                 override fun onLocationResult(p0: LocationResult) {
@@ -112,7 +130,11 @@ class MainActivity : ComponentActivity() {
                 Surface(
                     modifier = Modifier.fillMaxSize(), color = Color.Blue
                 ) {
-                    LocationScreen(currentLocation)
+                    HorizontalPager(
+                        state = pagerState, flingBehavior = flingBehavior, count = locations.size
+                    ) { page ->
+                        LocationScreen(location = locations[page])
+                    }
                 }
             }
         }
@@ -131,16 +153,9 @@ class MainActivity : ComponentActivity() {
     @Composable
     private fun LocationScreen(location: LatLng) {
         val mainViewModel: MainViewModel = viewModel()
-        val locations = listOf(
-            MONTEVIDEO, LONDRES, SAO_PAULO, BUENOS_AIRES, MUNICH
-        )
 
         LaunchedEffect(key1 = location) {
             mainViewModel.getWeatherByLocation(location)
-        }
-
-        LaunchedEffect(key1 = locations) {
-            mainViewModel.getCitiesWeathers(locations)
         }
 
         val gradient = Brush.linearGradient(
@@ -187,11 +202,6 @@ class MainActivity : ComponentActivity() {
 
                     else -> {
                         WeatherSection(mainViewModel.weatherResponse)
-                        WeatherSection(mainViewModel.citiesWeathers[0])
-                        WeatherSection(mainViewModel.citiesWeathers[1])
-                        WeatherSection(mainViewModel.citiesWeathers[2])
-                        WeatherSection(mainViewModel.citiesWeathers[3])
-                        WeatherSection(mainViewModel.citiesWeathers[4])
                     }
                 }
             }

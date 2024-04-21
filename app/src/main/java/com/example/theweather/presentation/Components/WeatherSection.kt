@@ -23,8 +23,9 @@ import com.example.theweather.domain.util.Utils.Companion.timestampToHumanDate
 @Composable
 fun WeatherSection(
     data: WeatherResult,
+    cityName: String? = null
 ) {
-    val title = setTitle(data)
+    val title = setTitle(data, cityName)
     val subTitle = setSubtitle(data)
     val temp = setTemperature(data)
     val maxTemp = setMaxTemperature(data)
@@ -97,8 +98,10 @@ fun WeatherTitleSection(text: String, subText: String, fontSize: TextUnit) {
     }
 }
 
-private fun setTitle(weatherResponse: WeatherResult): String {
-    return if (!weatherResponse.name.isNullOrEmpty()) {
+private fun setTitle(weatherResponse: WeatherResult, cityName: String?): String {
+    return if (!cityName.isNullOrEmpty()) {
+        cityName
+    } else if (!weatherResponse.name.isNullOrEmpty()) {
         weatherResponse.name.let {
             it!!
         }
