@@ -35,8 +35,9 @@ import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
+import androidx.lifecycle.ViewModelProvider
 import com.example.theweather.constants.Const.Companion.permissions
-import com.example.theweather.data.models.MyLatLng
+import com.example.theweather.data.models.LatLng
 import com.example.theweather.presentation.ui.theme.WeatherAppTheme
 import com.example.theweather.presentation.ui.theme.colorBg1
 import com.example.theweather.presentation.ui.theme.colorBg2
@@ -53,12 +54,18 @@ class MainActivity : ComponentActivity() {
     private lateinit var fusedLocationProviderClient: FusedLocationProviderClient
     private lateinit var locationCallback: LocationCallback
     private var locationRequired: Boolean = false
+    private lateinit var mainViewModel: MainViewModel
 
     override fun onPause() {
         super.onPause()
         locationCallback.let {
             fusedLocationProviderClient.removeLocationUpdates(it)
         }
+    }
+
+    override fun onResume() {
+        super.onResume()
+        if (locationRequired) startLocationUpdate()
     }
 
     @SuppressLint("MissingPermission")
@@ -82,17 +89,20 @@ class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
         initLocationClient()
+        initViewModel()
+
         setContent {
             var currentLocation by remember {
-                mutableStateOf(MyLatLng(0.0, 0.0))
+                mutableStateOf(LatLng(0.0, 0.0))
             }
 
             locationCallback = object : LocationCallback() {
                 override fun onLocationResult(p0: LocationResult) {
                     super.onLocationResult(p0)
                     for (location in p0.locations) {
-                        currentLocation = MyLatLng(
+                        currentLocation = LatLng(
                             location.latitude,
                             location.longitude
                         )
@@ -113,8 +123,12 @@ class MainActivity : ComponentActivity() {
         }
     }
 
+    private fun initViewModel() {
+        mainViewModel = ViewModelProvider(this@MainActivity)[MainViewModel::class.java]
+    }
+
     @Composable
-    private fun LocationScreen(context: Context, currentLocation: MyLatLng) {
+    private fun LocationScreen(context: Context, currentLocation: LatLng) {
         val launcherMultiplePermissions = rememberLauncherForActivityResult(
             ActivityResultContracts.RequestMultiplePermissions()
         ) { permissionMap ->
