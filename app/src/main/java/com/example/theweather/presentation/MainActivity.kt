@@ -59,7 +59,7 @@ class MainActivity : ComponentActivity() {
     private lateinit var locationCallback: LocationCallback
     private var locationRequired: Boolean = false
     private lateinit var mainViewModel: MainViewModel
-    val locations = listOf(
+    private var locations = mutableListOf(
         LatLng(0.0, 0.0), MONTEVIDEO, LONDRES, SAO_PAULO, BUENOS_AIRES, MUNICH
     )
 
@@ -116,12 +116,14 @@ class MainActivity : ComponentActivity() {
                 }
             }
 
+            locations[0] = currentLocation
+
             WeatherAppTheme {
                 Surface(
                     modifier = Modifier.fillMaxSize(), color = Color.Blue
                 ) {
                     HorizontalPager(
-                        state = pagerState, count = locations.size
+                        state = pagerState, count = 1
                     ) { page ->
                         LocationScreen(location = locations[page])
                     }
@@ -192,11 +194,13 @@ class MainActivity : ComponentActivity() {
 
                     else -> {
                         WeatherSection(mainViewModel.weatherResponse)
+
                     }
                 }
             }
         }
     }
+
 
     private fun initLocationClient() {
         fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this)
