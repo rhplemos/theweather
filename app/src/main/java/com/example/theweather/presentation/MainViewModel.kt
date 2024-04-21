@@ -21,6 +21,7 @@ enum class STATE {
 class MainViewModel: ViewModel() {
     var state by mutableStateOf(STATE.LOADING)
     var weatherResponse: WeatherResult by mutableStateOf(WeatherResult())
+    var citiesWeathers: MutableList<WeatherResult> by mutableStateOf(ArrayList<WeatherResult>())
     var forecastResponse: ForecastResult by mutableStateOf(ForecastResult())
     var errorMessage: String by mutableStateOf("")
 
@@ -46,6 +47,25 @@ class MainViewModel: ViewModel() {
             try {
                 val apiResponse = apiService.getForecast(latLng.lat, latLng.lng)
                 forecastResponse = apiResponse
+                state = STATE.SUCCESS
+            } catch (e: Exception) {
+                errorMessage = e.message.toString()
+                state = STATE.FAILED
+            }
+        }
+    }
+
+    fun getCitiesWeathers(locations: List<LatLng>) {
+        viewModelScope.launch {
+            val response: MutableList<WeatherResult> = mutableListOf()
+
+            val apiService = RetrofitClient.getInstance()
+            try {
+                locations.forEach { loc ->
+                    response.add(apiService.getWeatherData(loc.lat, loc.lng))
+                }
+
+                citiesWeathers = response
                 state = STATE.SUCCESS
             } catch (e: Exception) {
                 errorMessage = e.message.toString()

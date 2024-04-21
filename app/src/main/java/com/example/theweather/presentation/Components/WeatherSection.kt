@@ -63,16 +63,14 @@ fun WeatherSection(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceAround
                 ) {
-                    WeatherDataDisplay(
+                    WeatherTemperatureDisplay(
                         value = minTemp,
-                        icon = ImageVector.vectorResource(id = R.drawable.ic_sunnycloudy),
-                        iconTint = Color.White,
+                        label = "Min",
                         textStyle = TextStyle(color = Color.White)
                     )
-                    WeatherDataDisplay(
+                    WeatherTemperatureDisplay(
                         value = maxTemp,
-                        icon = ImageVector.vectorResource(id = R.drawable.ic_sunny),
-                        iconTint = Color.White,
+                        label = "Max",
                         textStyle = TextStyle(color = Color.White)
                     )
                     WeatherDataDisplay(

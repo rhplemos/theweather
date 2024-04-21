@@ -3,15 +3,10 @@ package com.example.theweather.presentation
 import ErrorSection
 import LoadingSection
 import android.annotation.SuppressLint
-import android.content.Context
-import android.content.pm.PackageManager
 import android.os.Bundle
 import android.os.Looper
-import android.widget.Toast
 import androidx.activity.ComponentActivity
-import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
-import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -36,9 +31,8 @@ import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.core.content.ContextCompat
 import androidx.lifecycle.ViewModelProvider
-import com.example.theweather.constants.Const.Companion.permissions
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.theweather.constants.StaticCoordinates.Companion.BUENOS_AIRES
 import com.example.theweather.constants.StaticCoordinates.Companion.LONDRES
 import com.example.theweather.constants.StaticCoordinates.Companion.MONTEVIDEO
@@ -55,7 +49,6 @@ import com.google.android.gms.location.LocationRequest
 import com.google.android.gms.location.LocationResult
 import com.google.android.gms.location.LocationServices
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.coroutineScope
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
@@ -63,15 +56,6 @@ class MainActivity : ComponentActivity() {
     private lateinit var locationCallback: LocationCallback
     private var locationRequired: Boolean = false
     private lateinit var mainViewModel: MainViewModel
-
-    val locations = listOf(
-        LatLng(0.0, 0.0),
-        MONTEVIDEO,
-        LONDRES,
-        SAO_PAULO,
-        BUENOS_AIRES,
-        MUNICH
-    )
 
     override fun onPause() {
         super.onPause()
@@ -97,9 +81,7 @@ class MainActivity : ComponentActivity() {
             }
 
             fusedLocationProviderClient.requestLocationUpdates(
-                locationRequest,
-                it,
-                Looper.getMainLooper()
+                locationRequest, it, Looper.getMainLooper()
             )
         }
     }
@@ -120,8 +102,7 @@ class MainActivity : ComponentActivity() {
                     super.onLocationResult(p0)
                     for (location in p0.locations) {
                         currentLocation = LatLng(
-                            location.latitude,
-                            location.longitude
+                            location.latitude, location.longitude
                         )
                     }
                 }
@@ -129,10 +110,9 @@ class MainActivity : ComponentActivity() {
 
             WeatherAppTheme {
                 Surface(
-                    modifier = Modifier.fillMaxSize(),
-                    color = Color.Blue
+                    modifier = Modifier.fillMaxSize(), color = Color.Blue
                 ) {
-                    LocationScreen(this@MainActivity, currentLocation)
+                    LocationScreen(currentLocation)
                 }
             }
         }
@@ -149,36 +129,19 @@ class MainActivity : ComponentActivity() {
     }
 
     @Composable
-    private fun LocationScreen(context: Context, currentLocation: LatLng) {
-        val launcherMultiplePermissions = rememberLauncherForActivityResult(
-            ActivityResultContracts.RequestMultiplePermissions()
-        ) { permissionMap ->
-            val areGranted = permissionMap.values.reduce { accepted, next ->
-                accepted && next
-            }
-            if (areGranted) {
-                locationRequired = true;
-                startLocationUpdate();
-                Toast.makeText(context, "Permission Granted", Toast.LENGTH_SHORT).show()
-            } else {
-                Toast.makeText(context, "Permission Denied", Toast.LENGTH_SHORT).show()
-            }
+    private fun LocationScreen(location: LatLng) {
+        val mainViewModel: MainViewModel = viewModel()
+        val locations = listOf(
+            MONTEVIDEO, LONDRES, SAO_PAULO, BUENOS_AIRES, MUNICH
+        )
+
+        LaunchedEffect(key1 = location) {
+            mainViewModel.getWeatherByLocation(location)
         }
 
-        LaunchedEffect(key1 = currentLocation, block = {
-            coroutineScope {
-                if (permissions.all {
-                        ContextCompat.checkSelfPermission(
-                            context,
-                            it
-                        ) == PackageManager.PERMISSION_GRANTED
-                    }) {
-                    startLocationUpdate()
-                } else {
-                    launcherMultiplePermissions.launch(permissions)
-                }
-            }
-        })
+        LaunchedEffect(key1 = locations) {
+            mainViewModel.getCitiesWeathers(locations)
+        }
 
         val gradient = Brush.linearGradient(
             colors = listOf(colorBg1, colorBg2),
@@ -204,8 +167,7 @@ class MainActivity : ComponentActivity() {
                         val placeable = measurable.measure(constraints)
 
                         layout(
-                            placeable.width,
-                            placeable.height + marginTopPx.toInt()
+                            placeable.width, placeable.height + marginTopPx.toInt()
                         ) {
                             placeable.placeRelative(0, marginTopPx.toInt())
                         }
@@ -218,26 +180,31 @@ class MainActivity : ComponentActivity() {
                     STATE.LOADING -> {
                         LoadingSection()
                     }
+
                     STATE.FAILED -> {
                         ErrorSection(mainViewModel.errorMessage)
                     }
+
                     else -> {
                         WeatherSection(mainViewModel.weatherResponse)
+                        WeatherSection(mainViewModel.citiesWeathers[0])
+                        WeatherSection(mainViewModel.citiesWeathers[1])
+                        WeatherSection(mainViewModel.citiesWeathers[2])
+                        WeatherSection(mainViewModel.citiesWeathers[3])
+                        WeatherSection(mainViewModel.citiesWeathers[4])
                     }
                 }
             }
-
         }
     }
 
     private fun initLocationClient() {
-        fusedLocationProviderClient = LocationServices
-            .getFusedLocationProviderClient(this)
+        fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this)
     }
 
     @Preview
     @Composable
     fun previewHome() {
-        LocationScreen(this@MainActivity, LatLng(11.11, 11.11))
+        LocationScreen(LatLng(11.11, 11.11))
     }
 }
