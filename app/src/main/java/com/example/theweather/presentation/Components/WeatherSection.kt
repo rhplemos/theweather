@@ -1,87 +1,97 @@
-import androidx.compose.foundation.Image
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
+package com.example.theweather.presentation.Components
+
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.Card
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.res.vectorResource
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import coil.compose.AsyncImage
 import com.example.theweather.R
-import com.example.theweather.constants.Const.Companion.LOADING
+import com.example.theweather.constants.Const
 import com.example.theweather.data.models.WeatherResult
-import com.example.theweather.domain.util.Utils.Companion.buildIcon
 import com.example.theweather.domain.util.Utils.Companion.timestampToHumanDate
 
 @Composable
-fun WeatherSection(weatherResponse: WeatherResult) {
-    val title = setTitle(weatherResponse)
-    val subTitle = setSubtitle(weatherResponse)
-    val icon = setIcon(weatherResponse)
-    val temp = setTemperature(weatherResponse)
-    val description = setDescription(weatherResponse)
-    val wind = setWind(weatherResponse)
-    val clouds = setClouds(weatherResponse)
+fun WeatherSection(
+    data: WeatherResult,
+) {
+    val title = setTitle(data)
+    val subTitle = setSubtitle(data)
+    val temp = setTemperature(data)
+    val maxTemp = setMaxTemperature(data)
+    val minTemp = setMinTemperature(data)
+    val description = setDescription(data)
+    val wind = setWind(data)
 
-    WeatherTitleSection(text = title, subText = subTitle, fontSize = 30.sp)
-    WeatherImage(icon = icon)
-    WeatherTitleSection(text = temp, subText = description, fontSize = 30.sp)
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(16.dp),
-        horizontalArrangement = Arrangement.SpaceAround
-    ) {
-        WeatherInfo(icon = R.drawable.ic_wind, text = wind)
-        WeatherInfo(icon = R.drawable.ic_cloudy, text = clouds)
+    data.let { data ->
+        Card(
+            backgroundColor = Color(0xFF1B3B5A),
+            shape = RoundedCornerShape(10.dp),
+            modifier = Modifier.padding(16.dp)
+        ) {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+//                Text(
+//                    text = "Today ${
+//                        data.dt?.let { timestampToHumanDate(it.toLong(), "dd-MM-yyyy") }
+//                    }",
+//                    modifier = Modifier.align(Alignment.End),
+//                    color = Color.White
+//                )
+                WeatherTitleSection(text = title, subText = subTitle, fontSize = 30.sp)
+                Spacer(modifier = Modifier.height(16.dp))
+                Spacer(modifier = Modifier.height(16.dp))
+                Text(
+                    text = "${temp}°C",
+                    fontSize = 50.sp,
+                    color = Color.White
+                )
+                Spacer(modifier = Modifier.height(16.dp))
+                Text(
+                    text = description,
+                    fontSize = 20.sp,
+                    color = Color.White
+                )
+                Spacer(modifier = Modifier.height(32.dp))
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceAround
+                ) {
+                    WeatherDataDisplay(
+                        value = minTemp,
+                        icon = ImageVector.vectorResource(id = R.drawable.ic_sunnycloudy),
+                        iconTint = Color.White,
+                        textStyle = TextStyle(color = Color.White)
+                    )
+                    WeatherDataDisplay(
+                        value = maxTemp,
+                        icon = ImageVector.vectorResource(id = R.drawable.ic_sunny),
+                        iconTint = Color.White,
+                        textStyle = TextStyle(color = Color.White)
+                    )
+                    WeatherDataDisplay(
+                        value = wind,
+                        icon = ImageVector.vectorResource(id = R.drawable.ic_wind),
+                        iconTint = Color.White,
+                        textStyle = TextStyle(color = Color.White)
+                    )
+                }
+            }
+        }
     }
-
-    return Column(
-        modifier = Modifier.fillMaxSize(),
-        verticalArrangement = Arrangement.Center,
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        Text(text = weatherResponse.toString())
-    }
-}
-
-@Composable
-fun WeatherInfo(icon: Int, text: String) {
-    Column(
-
-    ) {
-        Image(
-            painter = painterResource(id = icon),
-            contentDescription = null,
-            modifier = Modifier.width(40.dp)
-        )
-        Text(text = text, fontSize = 24.sp, color = Color.White)
-
-    }
-}
-
-@Composable
-fun WeatherImage(icon: String) {
-    AsyncImage(
-        model = buildIcon(icon),
-        contentDescription = icon,
-        modifier = Modifier
-            .width(200.dp)
-            .height(200.dp),
-        contentScale = ContentScale.FillBounds
-    )
 }
 
 @Composable
@@ -112,7 +122,7 @@ private fun setSubtitle(weatherResponse: WeatherResult): String {
     val dateVal = (weatherResponse.dt ?: 0)
 
     return if (dateVal == 0) {
-        LOADING
+        Const.LOADING
     } else {
         timestampToHumanDate(dateVal.toLong(), "dd-MM-yyyy")
     }
@@ -124,7 +134,7 @@ private fun setIcon(weatherResponse: WeatherResult): String {
     weatherResponse.weather.let {
         if (it!!.size > 0) {
             icon = if (it.first().icon == null) {
-                LOADING
+                Const.LOADING
             } else {
                 it.first().icon!!
             }
@@ -150,7 +160,7 @@ private fun setDescription(weatherResponse: WeatherResult): String {
     weatherResponse.weather.let {
         if (it!!.size > 0) {
             description = if (it.first().description == null) {
-                LOADING
+                Const.LOADING
             } else {
                 it.first().description!!
             }
@@ -165,7 +175,7 @@ private fun setWind(weatherResponse: WeatherResult): String {
 
     weatherResponse.wind.let {
         wind = if (it == null) {
-            LOADING
+            Const.LOADING
         } else {
             "${it.speed}"
         }
@@ -179,11 +189,35 @@ private fun setClouds(weatherResponse: WeatherResult): String {
 
     weatherResponse.cloud.let {
         clouds = if (it == null) {
-            LOADING
+            Const.LOADING
         } else {
-            "${it.all}"
+            if (it.all == null) {
+                "N/A"
+            } else {
+                "${it.all}"
+            }
         }
     }
 
     return clouds
+}
+
+private fun setMinTemperature(weatherResponse: WeatherResult): String {
+    var min = ""
+
+    weatherResponse.main.let {
+        min = "${it!!.temp_min} ºC"
+    }
+
+    return min
+}
+
+private fun setMaxTemperature(weatherResponse: WeatherResult): String {
+    var max = ""
+
+    weatherResponse.main.let {
+        max = "${it!!.temp_max} ºC"
+    }
+
+    return max
 }
