@@ -10,18 +10,18 @@ interface WeatherApi {
 
     @GET("weather")
     suspend fun getWeatherData(
-        @Query("latitude") lat: Double = 0.0,
-        @Query("longitude") lng: Double = 0.0,
+        @Query("lat") lat: Double = 0.0,
+        @Query("lon") lng: Double = 0.0,
         @Query("units") units: String = "metric",
-        @Query("app") appId: String = apiKey
+        @Query("appid") appId: String = apiKey
     ): WeatherResult
 
     @GET("forecast")
     suspend fun getForecast(
-        @Query("latitude") lat: Double = 0.0,
-        @Query("longitude") lng: Double = 0.0,
+        @Query("lat") lat: Double = 0.0,
+        @Query("lon") lng: Double = 0.0,
         @Query("units") units: String = "metric",
-        @Query("app") appId: String = apiKey
+        @Query("appid") appId: String = apiKey
     ): ForecastResult
 
 }
