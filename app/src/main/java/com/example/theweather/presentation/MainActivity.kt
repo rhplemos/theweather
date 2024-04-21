@@ -8,8 +8,6 @@ import android.os.Looper
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.background
-import androidx.compose.foundation.gestures.FlingBehavior
-import androidx.compose.foundation.gestures.ScrollScope
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -106,14 +104,6 @@ class MainActivity : ComponentActivity() {
                 mutableStateOf(LatLng(0.0, 0.0))
             }
             val pagerState = rememberPagerState(initialPage = 0)
-            val flingBehavior = remember {
-                object : FlingBehavior {
-                    override suspend fun ScrollScope.performFling(initialVelocity: Float): Float {
-                        return initialVelocity
-                    }
-                }
-            }
-
 
             locationCallback = object : LocationCallback() {
                 override fun onLocationResult(p0: LocationResult) {
@@ -131,7 +121,7 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(), color = Color.Blue
                 ) {
                     HorizontalPager(
-                        state = pagerState, flingBehavior = flingBehavior, count = locations.size
+                        state = pagerState, count = locations.size
                     ) { page ->
                         LocationScreen(location = locations[page])
                     }
