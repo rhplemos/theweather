@@ -27,10 +27,11 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
 
         setContent {
-            CircularProgressIndicator(
-
+            Text(
+                text = "text",
+                color = Color.Red,
+                textAlign = TextAlign.Center,
             )
-
         }
     }
 }
