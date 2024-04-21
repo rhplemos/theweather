@@ -1,5 +1,9 @@
 package com.example.theweather.presentation
 
+import ErrorSection
+import ForecastSection
+import LoadingSection
+import WeatherSection
 import android.annotation.SuppressLint
 import android.content.Context
 import android.content.pm.PackageManager
@@ -34,6 +38,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.layout
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.ViewModelProvider
@@ -120,8 +125,6 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = Color.Blue
                 ) {
-
-
                     LocationScreen(this@MainActivity, currentLocation)
                 }
             }
@@ -205,62 +208,20 @@ class MainActivity : ComponentActivity() {
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
 
-                if (mainViewModel.state == STATE.LOADING) {
-                    LoadingSection()
-                } else if (mainViewModel.state == STATE.FAILED) {
-                    ErrorSection(mainViewModel.errorMessage)
-                } else {
-                    WeatherSection(mainViewModel.weatherResponse)
-                    ForecastSection(mainViewModel.forecastResponse)
+                when (mainViewModel.state) {
+                    STATE.LOADING -> {
+                        LoadingSection()
+                    }
+                    STATE.FAILED -> {
+                        ErrorSection(mainViewModel.errorMessage)
+                    }
+                    else -> {
+                        WeatherSection(mainViewModel.weatherResponse)
+                        ForecastSection(mainViewModel.forecastResponse)
+                    }
                 }
             }
 
-        }
-    }
-
-    @Composable
-    fun ForecastSection(forecastResponse: ForecastResult) {
-        return Column(
-            modifier = Modifier.fillMaxSize(),
-            verticalArrangement = Arrangement.Center,
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            Text(text = forecastResponse.toString())
-        }
-    }
-
-    @Composable
-    fun WeatherSection(weatherResponse: WeatherResult) {
-        return Column(
-            modifier = Modifier.fillMaxSize(),
-            verticalArrangement = Arrangement.Center,
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            Text(text = weatherResponse.toString())
-        }
-    }
-
-
-    @Composable
-    fun LoadingSection() {
-        return Column(
-            modifier = Modifier.fillMaxSize(),
-            verticalArrangement = Arrangement.Center,
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            CircularProgressIndicator(color = Color.White)
-
-        }
-    }
-
-    @Composable
-    fun ErrorSection(errorMessage: String) {
-        return Column(
-            modifier = Modifier.fillMaxSize(),
-            verticalArrangement = Arrangement.Center,
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            Text(text = errorMessage, color = Color.White)
         }
     }
 
@@ -269,8 +230,9 @@ class MainActivity : ComponentActivity() {
             .getFusedLocationProviderClient(this)
     }
 
-//    @Preview
-//    fun previewHome() {
-//        LocationScreen(this@MainActivity, currentLocation)
-//    }
+    @Preview
+    @Composable
+    fun previewHome() {
+        LocationScreen(this@MainActivity, LatLng(11.11, 11.11))
+    }
 }
