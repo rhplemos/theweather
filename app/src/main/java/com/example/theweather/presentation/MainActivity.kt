@@ -3,10 +3,15 @@ package com.example.theweather.presentation
 import ErrorSection
 import LoadingSection
 import android.annotation.SuppressLint
+import android.content.Context
+import android.content.pm.PackageManager
 import android.os.Bundle
 import android.os.Looper
+import android.widget.Toast
 import androidx.activity.ComponentActivity
+import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -31,27 +36,21 @@ import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.core.content.ContextCompat
 import androidx.lifecycle.ViewModelProvider
-import androidx.lifecycle.viewmodel.compose.viewModel
-import com.example.theweather.constants.StaticCoordinates.Companion.BUENOS_AIRES
-import com.example.theweather.constants.StaticCoordinates.Companion.LONDRES
-import com.example.theweather.constants.StaticCoordinates.Companion.MONTEVIDEO
-import com.example.theweather.constants.StaticCoordinates.Companion.MUNICH
-import com.example.theweather.constants.StaticCoordinates.Companion.SAO_PAULO
+import com.example.theweather.constants.Const
 import com.example.theweather.data.models.LatLng
 import com.example.theweather.presentation.Components.WeatherSection
 import com.example.theweather.presentation.ui.theme.WeatherAppTheme
 import com.example.theweather.presentation.ui.theme.colorBg1
 import com.example.theweather.presentation.ui.theme.colorBg2
-import com.google.accompanist.pager.ExperimentalPagerApi
-import com.google.accompanist.pager.HorizontalPager
-import com.google.accompanist.pager.rememberPagerState
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationCallback
 import com.google.android.gms.location.LocationRequest
 import com.google.android.gms.location.LocationResult
 import com.google.android.gms.location.LocationServices
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.coroutineScope
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
@@ -89,7 +88,6 @@ class MainActivity : ComponentActivity() {
         }
     }
 
-    @OptIn(ExperimentalPagerApi::class)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -100,31 +98,32 @@ class MainActivity : ComponentActivity() {
             var currentLocation by remember {
                 mutableStateOf(LatLng(0.0, 0.0))
             }
-            val pagerState = rememberPagerState(initialPage = 0)
 
             locationCallback = object : LocationCallback() {
                 override fun onLocationResult(p0: LocationResult) {
                     super.onLocationResult(p0)
                     for (location in p0.locations) {
                         currentLocation = LatLng(
-                            location.latitude, location.longitude
+                            location.latitude,
+                            location.longitude
                         )
                     }
+
+                    fetchWeatherInformation(mainViewModel, currentLocation)
                 }
             }
-
 
             WeatherAppTheme {
                 Surface(
                     modifier = Modifier.fillMaxSize(), color = Color.Blue
                 ) {
-                    LocationScreen(location = currentLocation)
+                    LocationScreen(location = currentLocation, this@MainActivity)
                 }
             }
         }
     }
 
-    private fun featchWeatherInformation(mainViewModel: MainViewModel, currentLocation: LatLng) {
+    private fun fetchWeatherInformation(mainViewModel: MainViewModel, currentLocation: LatLng) {
         mainViewModel.state = STATE.LOADING
         mainViewModel.getWeatherByLocation(currentLocation)
         mainViewModel.state = STATE.SUCCESS
@@ -135,13 +134,36 @@ class MainActivity : ComponentActivity() {
     }
 
     @Composable
-    private fun LocationScreen(location: LatLng) {
-        val mainViewModel: MainViewModel = viewModel()
-
-        LaunchedEffect(key1 = location) {
-            mainViewModel.getWeatherByLocation(location)
+    private fun LocationScreen(location: LatLng, context: Context) {
+        val launcherMultiplePermissions = rememberLauncherForActivityResult(
+            ActivityResultContracts.RequestMultiplePermissions()
+        ) { permissionMap ->
+            val areGranted = permissionMap.values.reduce { accepted, next ->
+                accepted && next
+            }
+            if (areGranted) {
+                locationRequired = true;
+                startLocationUpdate();
+                Toast.makeText(context, "Permission Granted", Toast.LENGTH_SHORT).show()
+            } else {
+                Toast.makeText(context, "Permission Denied", Toast.LENGTH_SHORT).show()
+            }
         }
 
+        LaunchedEffect(key1 = location, block = {
+            coroutineScope {
+                if (Const.permissions.all {
+                        ContextCompat.checkSelfPermission(
+                            context,
+                            it
+                        ) == PackageManager.PERMISSION_GRANTED
+                    }) {
+                    startLocationUpdate()
+                } else {
+                    launcherMultiplePermissions.launch(Const.permissions)
+                }
+            }
+        })
         val gradient = Brush.linearGradient(
             colors = listOf(colorBg1, colorBg2),
             start = Offset(1000f, -1000f),
@@ -186,7 +208,6 @@ class MainActivity : ComponentActivity() {
 
                     else -> {
                         WeatherSection(mainViewModel.weatherResponse)
-
                     }
                 }
             }
@@ -201,6 +222,6 @@ class MainActivity : ComponentActivity() {
     @Preview
     @Composable
     fun previewHome() {
-        LocationScreen(LatLng(11.11, 11.11))
+        LocationScreen(LatLng(11.11, 11.11), this)
     }
 }
