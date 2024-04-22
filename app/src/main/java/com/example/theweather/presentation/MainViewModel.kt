@@ -5,6 +5,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.theweather.constants.StaticCoordinates
 import com.example.theweather.data.models.ForecastResult
 import com.example.theweather.data.models.LatLng
 import com.example.theweather.data.models.WeatherResult
@@ -24,6 +25,13 @@ class MainViewModel: ViewModel() {
     var citiesWeathers: MutableList<WeatherResult> by mutableStateOf(ArrayList<WeatherResult>())
     var forecastResponse: ForecastResult by mutableStateOf(ForecastResult())
     var errorMessage: String by mutableStateOf("")
+    private var staticLocations = mutableListOf(
+        StaticCoordinates.MONTEVIDEO,
+        StaticCoordinates.LONDRES,
+        StaticCoordinates.SAO_PAULO,
+        StaticCoordinates.BUENOS_AIRES,
+        StaticCoordinates.MUNICH
+    )
 
     fun getWeatherByLocation(latLng: LatLng){
         viewModelScope.launch {
@@ -55,13 +63,13 @@ class MainViewModel: ViewModel() {
         }
     }
 
-    fun getCitiesWeathers(locations: List<LatLng>) {
+    fun getCitiesWeathers() {
         viewModelScope.launch {
             val response: MutableList<WeatherResult> = mutableListOf()
 
             val apiService = RetrofitClient.getInstance()
             try {
-                locations.forEach { loc ->
+                staticLocations.forEach { loc ->
                     response.add(apiService.getWeatherData(loc.lat, loc.lng))
                 }
 

@@ -59,9 +59,6 @@ class MainActivity : ComponentActivity() {
     private lateinit var locationCallback: LocationCallback
     private var locationRequired: Boolean = false
     private lateinit var mainViewModel: MainViewModel
-    private var locations = mutableListOf(
-        LatLng(0.0, 0.0), MONTEVIDEO, LONDRES, SAO_PAULO, BUENOS_AIRES, MUNICH
-    )
 
     override fun onPause() {
         super.onPause()
@@ -116,17 +113,12 @@ class MainActivity : ComponentActivity() {
                 }
             }
 
-            locations[0] = currentLocation
 
             WeatherAppTheme {
                 Surface(
                     modifier = Modifier.fillMaxSize(), color = Color.Blue
                 ) {
-                    HorizontalPager(
-                        state = pagerState, count = 1
-                    ) { page ->
-                        LocationScreen(location = locations[page])
-                    }
+                    LocationScreen(location = currentLocation)
                 }
             }
         }
