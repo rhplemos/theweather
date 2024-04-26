@@ -33,54 +33,52 @@ fun WeatherSection(
     val description = setDescription(data)
     val wind = setWind(data)
 
-    data.let { data ->
-        Card(
-            backgroundColor = Color(0xFF1B3B5A),
-            shape = RoundedCornerShape(10.dp),
-            modifier = Modifier.padding(16.dp)
+    Card(
+        backgroundColor = Color(0xFF1B3B5A),
+        shape = RoundedCornerShape(10.dp),
+        modifier = Modifier.padding(16.dp)
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(16.dp),
-                horizontalAlignment = Alignment.CenterHorizontally
+            WeatherTitleSection(text = title, subText = subTitle, fontSize = 30.sp)
+            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(16.dp))
+            Text(
+                text = temp,
+                fontSize = 50.sp,
+                color = Color.White
+            )
+            Spacer(modifier = Modifier.height(16.dp))
+            Text(
+                text = description,
+                fontSize = 20.sp,
+                color = Color.White
+            )
+            Spacer(modifier = Modifier.height(32.dp))
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceAround
             ) {
-                WeatherTitleSection(text = title, subText = subTitle, fontSize = 30.sp)
-                Spacer(modifier = Modifier.height(16.dp))
-                Spacer(modifier = Modifier.height(16.dp))
-                Text(
-                    text = "${temp}",
-                    fontSize = 50.sp,
-                    color = Color.White
+                WeatherTemperatureDisplay(
+                    value = minTemp,
+                    label = "Min:",
+                    textStyle = TextStyle(color = Color.White)
                 )
-                Spacer(modifier = Modifier.height(16.dp))
-                Text(
-                    text = description,
-                    fontSize = 20.sp,
-                    color = Color.White
+                WeatherTemperatureDisplay(
+                    value = maxTemp,
+                    label = "Max:",
+                    textStyle = TextStyle(color = Color.White)
                 )
-                Spacer(modifier = Modifier.height(32.dp))
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceAround
-                ) {
-                    WeatherTemperatureDisplay(
-                        value = minTemp,
-                        label = "Min",
-                        textStyle = TextStyle(color = Color.White)
-                    )
-                    WeatherTemperatureDisplay(
-                        value = maxTemp,
-                        label = "Max",
-                        textStyle = TextStyle(color = Color.White)
-                    )
-                    WeatherDataDisplay(
-                        value = wind,
-                        icon = ImageVector.vectorResource(id = R.drawable.ic_wind),
-                        iconTint = Color.White,
-                        textStyle = TextStyle(color = Color.White)
-                    )
-                }
+                WeatherDataDisplay(
+                    value = wind,
+                    icon = ImageVector.vectorResource(id = R.drawable.ic_wind),
+                    iconTint = Color.White,
+                    textStyle = TextStyle(color = Color.White)
+                )
             }
         }
     }
@@ -122,22 +120,6 @@ private fun setSubtitle(weatherResponse: WeatherResult): String {
     }
 }
 
-private fun setIcon(weatherResponse: WeatherResult): String {
-    var icon = ""
-
-    weatherResponse.weather.let {
-        if (it!!.size > 0) {
-            icon = if (it.first().icon == null) {
-                Const.LOADING
-            } else {
-                it.first().icon!!
-            }
-        }
-    }
-
-    return icon
-}
-
 private fun setTemperature(weatherResponse: WeatherResult): String {
     var temp = ""
 
@@ -171,29 +153,11 @@ private fun setWind(weatherResponse: WeatherResult): String {
         wind = if (it == null) {
             Const.LOADING
         } else {
-            "${it.speed}"
+            "${it.speed} m/s"
         }
     }
 
     return wind
-}
-
-private fun setClouds(weatherResponse: WeatherResult): String {
-    var clouds = ""
-
-    weatherResponse.cloud.let {
-        clouds = if (it == null) {
-            Const.LOADING
-        } else {
-            if (it.all == null) {
-                "N/A"
-            } else {
-                "${it.all}"
-            }
-        }
-    }
-
-    return clouds
 }
 
 private fun setMinTemperature(weatherResponse: WeatherResult): String {

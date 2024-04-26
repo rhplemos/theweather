@@ -15,6 +15,5 @@ fun LoadingSection() {
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         CircularProgressIndicator(color = Color.White)
-
     }
 }
