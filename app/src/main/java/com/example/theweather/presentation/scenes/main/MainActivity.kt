@@ -1,4 +1,4 @@
-package com.example.theweather.presentation
+package com.example.theweather.presentation.scenes.main
 
 import ErrorSection
 import LoadingSection
@@ -54,6 +54,10 @@ import kotlinx.coroutines.coroutineScope
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
+    private var selectedLong: Double = 0.0
+    private var selectedLat: Double = 0.0
+    private var isUserLocation: Boolean = true
+    lateinit var searchedLocation: LatLng
     private lateinit var fusedLocationProviderClient: FusedLocationProviderClient
     private lateinit var locationCallback: LocationCallback
     private var locationRequired: Boolean = false
@@ -93,6 +97,7 @@ class MainActivity : ComponentActivity() {
 
         initLocationClient()
         initViewModel()
+        extractLocation()
 
         setContent {
             var currentLocation by remember {
@@ -109,7 +114,7 @@ class MainActivity : ComponentActivity() {
                         )
                     }
 
-                    fetchWeatherInformation(mainViewModel, currentLocation)
+                    fetchWeatherInformation(mainViewModel, handleUserLocation(searchedLocation, currentLocation))
                 }
             }
 
@@ -117,10 +122,22 @@ class MainActivity : ComponentActivity() {
                 Surface(
                     modifier = Modifier.fillMaxSize(), color = Color.Blue
                 ) {
-                    LocationScreen(location = currentLocation, this@MainActivity)
+                    LocationScreen(location = handleUserLocation(searchedLocation, currentLocation), this@MainActivity)
                 }
             }
         }
+    }
+
+    private fun handleUserLocation(otherLocation: LatLng, userLocation: LatLng): LatLng {
+        return if (isUserLocation) userLocation else otherLocation
+    }
+
+    private fun extractLocation() {
+        selectedLat = intent.getDoubleExtra("selectedLat", 0.0)
+        selectedLong = intent.getDoubleExtra("selectedLong", 0.0)
+        isUserLocation = intent.getBooleanExtra("isUserLocation", true)
+
+        searchedLocation = LatLng(selectedLat, selectedLong)
     }
 
     private fun fetchWeatherInformation(mainViewModel: MainViewModel, currentLocation: LatLng) {
@@ -164,6 +181,7 @@ class MainActivity : ComponentActivity() {
                 }
             }
         })
+
         val gradient = Brush.linearGradient(
             colors = listOf(colorBg1, colorBg2),
             start = Offset(1000f, -1000f),
