@@ -159,8 +159,8 @@ class MainActivity : ComponentActivity() {
                 accepted && next
             }
             if (areGranted) {
-                locationRequired = true;
-                startLocationUpdate();
+                locationRequired = true
+                startLocationUpdate()
                 Toast.makeText(context, "Permission Granted", Toast.LENGTH_SHORT).show()
             } else {
                 Toast.makeText(context, "Permission Denied", Toast.LENGTH_SHORT).show()
